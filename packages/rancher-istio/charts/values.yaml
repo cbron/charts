@@ -46,8 +46,28 @@ sidecarInjectorWebhook:
     autoInject: true
   rewriteAppHTTPProbe: true
 
+kiali:
+  enabled: true
+  # TODO: fix image below
+  repository: rancher/kiali-kiali
+  tag: v1.15
+  contextPath: /
+  dashboard:
+    grafanaURL: http://monitoring-grafana.monitoring-system.svc
+    auth:
+      strategy: anonymous
+  prometheusAddr: http://monitoring-rancher-monitor-prometheus.monitoring-system.svc:9090
+
 global:
   proxy:
     image: proxyv2
   proxy_init:
     image: proxyv2
+  curl:
+    repository: rancher/pstauffer-curl
+    tag: v1.0.3
+  defaultNodeSelector: {}
+  arch:
+    amd64: 2
+    s390x: 2
+    ppc64le: 2
