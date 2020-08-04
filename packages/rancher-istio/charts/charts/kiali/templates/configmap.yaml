@@ -4,41 +4,54 @@ metadata:
   name: kiali
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ template "kiali.name" . }}
-    chart: {{ template "kiali.chart" . }}
-    heritage: {{ .Release.Service }}
+    app: kiali
     release: {{ .Release.Name }}
 data:
   config.yaml: |
+    istio_component_namespaces:
+      grafana: {{ .Values.global.grafanaNamespace }}
+      tracing: {{ .Values.global.tracingNamespace }}
+      istiod: {{ .Release.Namespace }}
+      prometheus: {{ .Values.global.prometheusNamespace }}
     istio_namespace: {{ .Release.Namespace }}
+    auth:
+      strategy: {{ .Values.kiali.dashboard.auth.strategy }}
+{{- if eq .Values.kiali.dashboard.auth.strategy "ldap" }}
+      ldap:
+{{- with .Values.kiali.dashboard.auth.strategy.ldap }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- end }}
     deployment:
       accessible_namespaces: ['**']
     login_token:
       signing_key: {{ randAlphaNum 10 | quote }}
-    auth:
-      strategy: {{ .Values.dashboard.auth.strategy }}
-{{- if eq .Values.dashboard.auth.strategy "ldap" }}
-      ldap:
-{{- with .Values.dashboard.auth.strategy.ldap }}
-{{ toYaml . | indent 8 }}
-{{- end }}
-{{- end }}
     server:
       port: 20001
-{{- if .Values.contextPath }}
-      web_root: {{ .Values.contextPath }}
+{{- if .Values.kiali.contextPath }}
+      web_root: {{ .Values.kiali.contextPath }}
 {{- end }}
     external_services:
+      istio:
+        url_service_version: http://istiod.{{ .Release.Namespace }}:15014/version
       tracing:
-        url: {{ .Values.dashboard.jaegerURL }}
-        in_cluster_url: {{ .Values.dashboard.jaegerInClusterURL }}
+        url: {{ .Values.kiali.dashboard.jaegerURL }}
+        in_cluster_url: {{ .Values.kiali.dashboard.jaegerInClusterURL }}
       grafana:
-        url: {{ .Values.dashboard.grafanaURL }}
-        in_cluster_url: {{ .Values.dashboard.grafanaInClusterURL }}
+        url: {{ .Values.kiali.dashboard.grafanaURL }}
+        in_cluster_url: {{ .Values.kiali.dashboard.grafanaInClusterURL }}
       prometheus:
-        url: {{ .Values.prometheusAddr }}
-{{- if .Values.security.enabled }}
+{{- if .Values.kiali.prometheusAddr}}
+        url: {{ .Values.kiali.prometheusAddr}}
+{{- else }}
+{{- if .Values.global.prometheusNamespace }}
+        url: http://prometheus.{{ .Values.global.prometheusNamespace }}:9090
+{{ else }}
+        url: http://prometheus:9090
+{{- end }}
+{{- end}}
+{{- if .Values.kiali.security.enabled }}
     identity:
-      cert_file: {{ .Values.security.cert_file }}
-      private_key_file: {{ .Values.security.private_key_file }}
+      cert_file: {{ .Values.kiali.security.cert_file }}
+      private_key_file: {{ .Values.kiali.security.private_key_file }}
 {{- end}}

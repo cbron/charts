@@ -17,7 +17,7 @@ cni:
     enabled: false
 
 egressGateways:
-    enabled: true
+    enabled: false
     type: NodePort
 
 ingressGateways:
@@ -47,16 +47,16 @@ sidecarInjectorWebhook:
   rewriteAppHTTPProbe: true
 
 kiali:
-  enabled: true
-  # TODO: fix image below
-  repository: rancher/kiali-kiali
-  tag: v1.15
-  contextPath: /
-  dashboard:
-    grafanaURL: http://monitoring-grafana.monitoring-system.svc
-    auth:
-      strategy: anonymous
-  prometheusAddr: http://monitoring-rancher-monitor-prometheus.monitoring-system.svc:9090
+  kiali:
+    enabled: true
+    repository: rancher/kiali-kiali
+    tag: v1.18
+    contextPath: /
+    dashboard:
+      grafanaURL: http://monitoring-grafana.monitoring-system.svc
+      auth:
+        strategy: anonymous
+    prometheusAddr: http://monitoring-rancher-monitor-prometheus.monitoring-system.svc:9090
 
 global:
   proxy:
@@ -66,6 +66,10 @@ global:
   curl:
     repository: rancher/pstauffer-curl
     tag: v1.0.3
+  # TODO: IS THIS RIGHT ? Especially tracing namespace.
+  prometheusNamespace: monitoring-system
+  grafanaNamespace: monitoring-system
+  tracingNamespace: ""
   defaultNodeSelector: {}
   arch:
     amd64: 2

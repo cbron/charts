@@ -1,30 +1,26 @@
-{{- if not .Values.dashboard.viewOnlyMode }}
+{{- if not .Values.kiali.dashboard.viewOnlyMode }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istio-kiali-admin-role-binding-{{ .Release.Namespace }}
+  name: kiali
   labels:
-    app: {{ template "kiali.name" . }}
-    chart: {{ template "kiali.chart" . }}
-    heritage: {{ .Release.Service }}
+    app: kiali
     release: {{ .Release.Name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: kiali
 subjects:
-- kind: ServiceAccount
-  name: kiali-service-account
-  namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: kiali-service-account
+    namespace: {{ .Release.Namespace }}
 {{- else }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: istio-kiali-viewer-role-binding-{{ .Release.Namespace }}
   labels:
-    app: {{ template "kiali.name" . }}
-    chart: {{ template "kiali.chart" . }}
-    heritage: {{ .Release.Service }}
+    app: kiali
     release: {{ .Release.Name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io

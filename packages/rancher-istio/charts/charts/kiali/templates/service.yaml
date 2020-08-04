@@ -3,15 +3,18 @@ kind: Service
 metadata:
   name: kiali
   namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- range $key, $val := .Values.kiali.service.annotations }}
+      {{ $key }}: {{ $val | quote }}
+    {{- end }}
   labels:
-    app: {{ template "kiali.name" . }}
-    chart: {{ template "kiali.chart" . }}
-    heritage: {{ .Release.Service }}
+    app: kiali
     release: {{ .Release.Name }}
 spec:
+  type: {{ .Values.kiali.service.type }}
   ports:
-  - name: http-kiali
-    protocol: TCP
-    port: 20001
+    - name: http-kiali
+      protocol: TCP
+      port: 20001
   selector:
     app: kiali

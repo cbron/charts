@@ -4,12 +4,10 @@ metadata:
   name: kiali
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ template "kiali.name" . }}
-    chart: {{ template "kiali.chart" . }}
-    heritage: {{ .Release.Service }}
+    app: kiali
     release: {{ .Release.Name }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.kiali.replicaCount }}
   selector:
     matchLabels:
       app: kiali
@@ -18,8 +16,6 @@ spec:
       name: kiali
       labels:
         app: kiali
-        chart: {{ template "kiali.chart" . }}
-        heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
       annotations:
         sidecar.istio.io/inject: "false"
@@ -27,8 +23,8 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
         kiali.io/runtimes: go,kiali
-        {{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | indent 8 }}
+        {{- if .Values.kiali.podAnnotations }}
+{{ toYaml .Values.kiali.podAnnotations | indent 8 }}
         {{- end }}
     spec:
       serviceAccountName: kiali-service-account
@@ -36,8 +32,10 @@ spec:
       priorityClassName: "{{ .Values.global.priorityClassName }}"
 {{- end }}
       containers:
-      - image: "{{ template "system_default_registry" . }}{{ .Values.repository }}:{{ .Values.tag }}"
+      - image: "{{ template "system_default_registry" . }}{{ .Values.kiali.repository }}:{{ .Values.kiali.tag }}"
+{{- if .Values.global.imagePullPolicy }}
         imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+{{- end }}
         name: kiali
         command:
         - "/opt/kiali/kiali"
@@ -47,16 +45,16 @@ spec:
         - "3"
         readinessProbe:
           httpGet:
-            path: {{ .Values.contextPath }}/healthz
+            path: {{ .Values.kiali.contextPath }}/healthz
             port: 20001
-            scheme:  {{ if .Values.security.enabled }} 'HTTPS' {{ else }} 'HTTP' {{ end }}
+            scheme: {{ if .Values.kiali.security.enabled }}'HTTPS'{{ else }}'HTTP'{{ end }}
           initialDelaySeconds: 5
           periodSeconds: 30
         livenessProbe:
           httpGet:
-            path: {{ .Values.contextPath }}/healthz
+            path: {{ .Values.kiali.contextPath }}/healthz
             port: 20001
-            scheme:  {{ if .Values.security.enabled }} 'HTTPS' {{ else }} 'HTTP' {{ end }}
+            scheme: {{ if .Values.kiali.security.enabled }}'HTTPS'{{ else }}'HTTP'{{ end }}
           initialDelaySeconds: 5
           periodSeconds: 30
         env:
@@ -72,8 +70,8 @@ spec:
         - name: kiali-secret
           mountPath: "/kiali-secret"
         resources:
-{{- if .Values.resources }}
-{{ toYaml .Values.resources | indent 10 }}
+{{- if .Values.kiali.resources }}
+{{ toYaml .Values.kiali.resources | indent 10 }}
 {{- else }}
 {{ toYaml .Values.global.defaultResources | indent 10 }}
 {{- end }}
@@ -84,20 +82,20 @@ spec:
       - name: kiali-cert
         secret:
           secretName: istio.kiali-service-account
-{{- if not .Values.security.enabled }}
+{{- if not .Values.kiali.security.enabled }}
           optional: true
-{{- end }}
+{{- end }}      
       - name: kiali-secret
         secret:
-          secretName: {{ .Values.dashboard.secretName }}
+          secretName: {{ .Values.kiali.dashboard.secretName }}
           optional: true
       affinity:
       {{- include "nodeaffinity" . | indent 6 }}
       {{- include "podAntiAffinity" . | indent 6 }}
-      {{- if .Values.tolerations }}
+{{- if .Values.kiali.tolerations }}
       tolerations:
-{{ toYaml .Values.tolerations | indent 6 }}
-      {{- else if .Values.global.defaultTolerations }}
+{{ toYaml .Values.kiali.tolerations | indent 6 }}
+{{- else if .Values.global.defaultTolerations }}
       tolerations:
 {{ toYaml .Values.global.defaultTolerations | indent 6 }}
-      {{- end }}
+{{- end }}
