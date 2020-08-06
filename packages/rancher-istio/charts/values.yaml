@@ -46,10 +46,15 @@ sidecarInjectorWebhook:
     autoInject: true
   rewriteAppHTTPProbe: true
 
+meshConfig:
+  enablePrometheusMerge: true
+
 kiali:
   kiali:
     enabled: true
-    repository: rancher/kiali-kiali
+    # TODO: FIx REPOSITORY
+    # repository: rancher/kiali-kiali
+    repository: quay.io/kiali/kiali
     tag: v1.18
     contextPath: /
     dashboard:

@@ -48,6 +48,8 @@ spec:
   profile: default
   tag: {{ .Values.tag }}
   revision: {{ .Values.revision }}
+  meshConfig:
+    enablePrometheusMerge: {{ .Values.meshConfig.enablePrometheusMerge }}
   values:
     gateways:
       istio-egressgateway:
